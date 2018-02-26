@@ -1,0 +1,110 @@
+﻿<Window x:Class="MusicLibraryExport.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MusicLibraryExport"
+        mc:Ignorable="d"
+        DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
+        Title="MainWindow" Height="600" Width="1000" Margin="5">
+    <Window.Resources>
+        <SolidColorBrush x:Key="_progressBackground" Color="#FFFDF9AA"/>
+    </Window.Resources>
+    <Grid>
+        <DataGrid ItemsSource="{Binding MusicFolders, Mode=TwoWay}" Margin="0,0,0,48" AutoGenerateColumns="False" Visibility="{Binding MusicFolderVisibility}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Artiste" Width="200" Binding="{Binding Path=Artist}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Album" Width="400" Binding="{Binding Path=Record}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Volume" Width="100" Binding="{Binding Path=Volume}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Format" Width="50" Binding="{Binding Path=Format}" IsReadOnly="True" />
+                <DataGridCheckBoxColumn Header="Sélection" Width="50" Binding="{Binding Path=EstSelectionne}" IsReadOnly="False" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+
+        <StackPanel x:Name="_stackPanelBoutons" Margin="5" VerticalAlignment="Bottom" Orientation="Horizontal" FlowDirection="RightToLeft">
+            <Button x:Name="_buttonConstruireListe" Content="Construire la liste" Visibility="{Binding ListUpdateButtonVisibility}" Margin="0,0,5,0" Command="{Binding CommandListUpdate}"/>
+            <Button x:Name="_buttonExporter" Content="Exporter" Margin="0,0,5,0" Visibility="{Binding ExportButtonVisibility}" Command="{Binding CommandExport}"/>
+        </StackPanel>
+        <WrapPanel HorizontalAlignment="Left" Height="100" Margin="1222,144,-330,0" VerticalAlignment="Top" Width="100"/>
+        <!--Visibility="{Binding ProgressPanelVisibility}"-->
+        <DockPanel Visibility="{Binding ProgressPanelVisibility}" Margin="50,50,50,50" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+            <Border Width="5"
+                    CornerRadius="5"
+                    Padding="10" />
+            
+            <StackPanel DockPanel.Dock="Bottom" Height="150">
+                <Grid Height="70">
+                    <ProgressBar Minimum="0" Maximum="{Binding ConversionTasksTotalCount}" Value="{Binding ConversionTasksDoneCount}" Background="{DynamicResource _progressBackground}" />
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Height="20">
+                            <Run Text="Conversions réalisées : " />
+                            <Run Text="{Binding ConversionTasksDoneCount}" />
+                            <Run Text=" / " />
+                            <Run Text="{Binding ConversionTasksTotalCount}" />
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Height="20">
+                            <Run Text="Durée de conversion écoulée : " />
+                            <Run>
+                                <Run.Text>
+                                    <MultiBinding StringFormat="{}{0} min {1} sec">
+                                        <Binding Path="ConvertElapsedDuration.Minutes" Mode="OneWay" />
+                                        <Binding Path="ConvertElapsedDuration.Seconds" Mode="OneWay" />                                        
+                                    </MultiBinding>
+                                </Run.Text>
+                            </Run>
+                            <Run Text=" " />
+                            <Run Text="(Durée restante estimée : " />
+                            <Run>
+                                <Run.Text>
+                                    <MultiBinding StringFormat="{}{0} min {1} sec">
+                                        <Binding Path="ConvertRemainingDuration.Minutes" Mode="OneWay" />
+                                        <Binding Path="ConvertRemainingDuration.Seconds" Mode="OneWay" />                                        
+                                    </MultiBinding>
+                                </Run.Text>
+                            </Run>
+                            <Run Text=")" />
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding ProgressConvertMessage}" FontSize="12" Height="20" />
+                    </StackPanel>
+                </Grid>
+                <StackPanel Height="10" />
+                <Grid Height="70">
+                    <ProgressBar Minimum="0" Maximum="{Binding CopyTasksTotalCount}" Value="{Binding CopyTasksDoneCount}" Background="{DynamicResource _progressBackground}" />
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Height="20">
+                            <Run Text="Copies réalisées : " />
+                            <Run Text="{Binding CopyTasksDoneCount}" />
+                            <Run Text=" / " />
+                            <Run Text="{Binding CopyTasksTotalCount}" />
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Height="20">
+                            <Run Text="Durée de copie écoulée : " />
+                            <Run>
+                                <Run.Text>
+                                    <MultiBinding StringFormat="{}{0} min {1} sec">
+                                        <Binding Path="CopyElapsedDuration.Minutes" Mode="OneWay" />
+                                        <Binding Path="CopyElapsedDuration.Seconds" Mode="OneWay" />                                        
+                                    </MultiBinding>
+                                </Run.Text>
+                            </Run>
+                            <Run Text=" " />
+                            <Run Text="(Durée restante estimée : " />
+                            <Run>
+                                <Run.Text>
+                                    <MultiBinding StringFormat="{}{0} min {1} sec">
+                                        <Binding Path="CopyRemainingDuration.Minutes" Mode="OneWay" />
+                                        <Binding Path="CopyRemainingDuration.Seconds" Mode="OneWay" />                                        
+                                    </MultiBinding>
+                                </Run.Text>
+                            </Run>
+                            <Run Text=")" />
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding ProgressCopyMessage}" FontSize="12" Height="20" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+            <TextBox Text="{Binding ProgressLog}" AcceptsReturn="true" IsReadOnly="true" />
+        </DockPanel>
+    </Grid>
+</Window>
