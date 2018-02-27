@@ -1,4 +1,7 @@
 ﻿using MusicLibraryExport.Model;
+using NAudio.Flac;
+using NAudio.Lame;
+using NAudio.Wave;
 using NLog;
 using System;
 using System.Collections.Concurrent;
@@ -53,7 +56,7 @@ namespace MusicLibraryExport
                 this.RemainingCopyTaskCount = remainingCopyTaskCount;
                 this.TotalConversionTaskCount = totalConversionTaskCount;
                 this.ElapsedConversionDuration = elapsedConversionDuration;
-                this.RemainingConversionTaskCount = remainingCopyTaskCount;
+                this.RemainingConversionTaskCount = remainingConversionTaskCount;
             }
         }
         #endregion
@@ -81,10 +84,6 @@ namespace MusicLibraryExport
         private volatile bool _isConvertInProgress;
 
         private ConcurrentQueue<FileExportTask> _copyTasks = new ConcurrentQueue<FileExportTask>();
-
-        private int _conversionTimeout = 3;
-
-        private int _conversionMaxTry = 3;
 
         private int _totalConversionTaskCount;
 
@@ -127,8 +126,8 @@ namespace MusicLibraryExport
                 FileExportTask task = null;
 
                 while (
-                        (this._isConvertInProgress) ||
-                        (this._copyTasks.TryDequeue(out task))
+                        (this._copyTasks.TryDequeue(out task)) ||
+                        (this._isConvertInProgress)
                       )
                 {
                     if (task != null)
@@ -185,8 +184,6 @@ namespace MusicLibraryExport
         {
             Task.Run(() =>
             {
-                string message;
-
                 var exportTasks = new List<FileExportTask>();
                 var convertTasks = new List<FileExportTask>();
 
@@ -257,79 +254,65 @@ namespace MusicLibraryExport
                 this.ProcessCopyTasks();
 
                 //                this._exportTasks = exportTasks;
+                ProcessConvertTasks(convertTasks);
+            });
+        }
 
-                var stopWatchConvert = new Stopwatch();
-                foreach (var fileToConvert in convertTasks)
+        /// <summary>
+        /// Démarre le processus de conversion.
+        /// </summary>
+        /// <param name="convertTasks">Les conversions à réaliser.</param>
+        private void ProcessConvertTasks(List<FileExportTask> convertTasks)
+        {
+            string message;
+
+            var stopWatchConvert = new Stopwatch();
+            Parallel.ForEach(convertTasks, fileToConvert =>
+            {
+                stopWatchConvert.Start();
+
+                var fi = new FileInfo(fileToConvert.SourcePath);
+                var tempPath = Path.Combine(this.TempPath, Path.GetTempFileName());
+
+                try
                 {
-                    stopWatchConvert.Start();
+                    message = $"Conversion de {fileToConvert.SourcePath}";
+                    this.RaiseExportProgress(ExportProgressType.ConvertBegin, message);
 
-                    var fi = new FileInfo(fileToConvert.SourcePath);
-                    var tempPath = Path.Combine(this.TempPath, Path.GetTempFileName());
-
-                    var processStartInfo = new ProcessStartInfo();
-                    processStartInfo.FileName = @"c:\Outils\ffmpeg-3.2.2-win64-static\bin\ffmpeg.exe";
-                    processStartInfo.RedirectStandardError = false;
-                    processStartInfo.RedirectStandardOutput = false;
-                    processStartInfo.UseShellExecute = true;
-                    processStartInfo.CreateNoWindow = false;
-                    processStartInfo.WindowStyle = ProcessWindowStyle.Minimized;
-                    processStartInfo.Arguments = $"-i \"{fi.FullName}\" -ab 192k -id3v2_version 3 -y -f mp3 \"{tempPath}\"";
-
-                    var process = new Process();
-
-                    int nCount = 1;
-                    bool isSuccess = false;
-                    string erreur = string.Empty;
-
-                    for (nCount = 1; nCount <= this._conversionMaxTry; nCount++)
+                    using (var reader = new FlacReader(fi.FullName))
                     {
-                        message = $"Conversion de {fileToConvert.SourcePath}";
-                        if (nCount > 1)
+                        using (WaveStream pcmStream = WaveFormatConversionStream.CreatePcmStream(reader))
                         {
-                            message += $"[Essai {nCount}]";
+                            using (var mp3Writer = new LameMP3FileWriter(tempPath, pcmStream.WaveFormat, LAMEPreset.VBR_90))
+                            {
+                                reader.CopyTo(mp3Writer);
+                            }
                         }
-                        message += "..";
-
-                        this.RaiseExportProgress(ExportProgressType.ConvertBegin, message);
-                        _logger.Info(message);
-
-                        process.StartInfo = processStartInfo;
-                        process.Start();
-                        
-
-                        if (process.WaitForExit(this._conversionTimeout * 60000))
-                        {
-                            isSuccess = true;
-                            break;
-                        }
-
-                        process.Kill();
-
                     }
-
-                    if (!isSuccess)
-                    {
-                        message = $"Une erreur s'est produite lors de la conversion de {fileToConvert.SourcePath}";
-                        this.RaiseExportProgress(ExportProgressType.Error, message);
-                        this.RaiseExportProgress(ExportProgressType.Error, erreur);
-                        _logger.Error(message);
-                    }
-
-                    fileToConvert.ConvertedPath = tempPath;
-
-                    this._remainingConversionTaskCount--;
-                    message = $"Conversion de {fileToConvert.SourcePath} terminée.";
-                    this._copyTasks.Enqueue(fileToConvert);
-
-                    stopWatchConvert.Stop();
-                    _elapsedConvertionDuration = stopWatchConvert.Elapsed;
-
-                    this.RaiseExportProgress(ExportProgressType.ConvertEnd, message);
-                    _logger.Info(message);
+                }
+                catch (Exception e)
+                {
+                    message = $"Une erreur s'est produite lors de la conversion de {fileToConvert.SourcePath}";
+                    this.RaiseExportProgress(ExportProgressType.Error, message);
+                    this.RaiseExportProgress(ExportProgressType.Error, e.Message);
+                    _logger.Error(message);
                 }
 
-                this._isConvertInProgress = false;
+                fileToConvert.ConvertedPath = tempPath;
+
+                this._remainingConversionTaskCount--;
+
+                message = $"Conversion de {fileToConvert.SourcePath} terminée.";
+                this._copyTasks.Enqueue(fileToConvert);
+
+                stopWatchConvert.Stop();
+                _elapsedConvertionDuration = stopWatchConvert.Elapsed;
+
+                this.RaiseExportProgress(ExportProgressType.ConvertEnd, message);
+                _logger.Info(message);
             });
+
+            this._isConvertInProgress = false;
         }
     }
 }
