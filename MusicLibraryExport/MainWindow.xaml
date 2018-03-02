@@ -6,18 +6,24 @@
         xmlns:local="clr-namespace:MusicLibraryExport"
         mc:Ignorable="d"
         DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
-        Title="MainWindow" Height="600" Width="1000" Margin="5">
+        Title="Export de musique" Height="600" Width="1000" Margin="5">
     <Window.Resources>
         <SolidColorBrush x:Key="_progressBackground" Color="#FFFDF9AA"/>
     </Window.Resources>
     <Grid>
         <DataGrid ItemsSource="{Binding MusicFolders, Mode=TwoWay}" Margin="0,0,0,48" AutoGenerateColumns="False" Visibility="{Binding MusicFolderVisibility}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Artiste" Width="200" Binding="{Binding Path=Artist}" IsReadOnly="True" />
-                <DataGridTextColumn Header="Album" Width="400" Binding="{Binding Path=Record}" IsReadOnly="True" />
-                <DataGridTextColumn Header="Volume" Width="100" Binding="{Binding Path=Volume}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Artiste" Width="*" Binding="{Binding Path=Artist}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Album" Width="2*" Binding="{Binding Path=Record}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Volume" Width="*" Binding="{Binding Path=Volume}" IsReadOnly="True" />
                 <DataGridTextColumn Header="Format" Width="50" Binding="{Binding Path=Format}" IsReadOnly="True" />
-                <DataGridCheckBoxColumn Header="Sélection" Width="50" Binding="{Binding Path=EstSelectionne}" IsReadOnly="False" />
+                <DataGridTemplateColumn Header="Sélection" Width="60">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox IsChecked="{Binding Path=EstSelectionne, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
 
