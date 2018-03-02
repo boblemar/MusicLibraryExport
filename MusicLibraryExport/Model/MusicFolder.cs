@@ -1,9 +1,8 @@
-﻿using System;
+﻿using GalaSoft.MvvmLight;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.ComponentModel;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace MusicLibraryExport.Model
@@ -11,7 +10,7 @@ namespace MusicLibraryExport.Model
     /// <summary>
     /// Classe décomposant un dossier de musique.
     /// </summary>
-    public class MusicFolder
+    public class MusicFolder : ObservableObject
     {
         #region Expressions rationnelles
         private static readonly Regex _regexBase = new Regex(@"^\\?(?<Artist>[^\\]+)\\(?<Record>[^\\]+)(\\(?<VolumeFormat>.*))?$", RegexOptions.Compiled);
@@ -19,21 +18,71 @@ namespace MusicLibraryExport.Model
 
         #region Constantes
         private static readonly HashSet<string> FORMATS = new HashSet<string>(new string [] { "MP3", "FLAC" });
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        #endregion
+
+        #region Membres
+        private string _path;
+        private string _artist;
+        private string _record;
+        private string _volume = string.Empty;
+        private string _format = string.Empty;
+        private bool _estSelectionne;
         #endregion
 
         #region Propriétés
-        public string Path { get; set; }
+        public string Path
+        {
+            get => this._path;
+            set => Set<string>(() => this.Path, ref this._path, value);
+        }
 
-        public string Artist { get; set; }
+        public string Artist
+        {
+            get => this._artist;
+            set => Set<string>(() => this.Artist, ref this._artist, value);
+        }
 
-        public string Record { get; set; }
+        public string Record
+        {
+            get => this._record;
+            set => Set<string>(() => this.Record, ref this._record, value);
+        }
 
-        public string Volume { get; set; } = string.Empty;
+        public string Volume
+        {
+            get => this._volume;
+            set => Set<string>(() => this.Volume, ref this._volume, value);
+        }
 
-        public string Format { get; set; } = string.Empty;
+        public string Format
+        {
+            get => this._format;
+            set => Set<string>(() => this.Format, ref this._format, value);
+        }
+        
+        [XmlIgnore]
+        public bool EstSelectionne
+        {
+            get => this._estSelectionne;
+            set => Set<bool>(() => this.EstSelectionne, ref this._estSelectionne, value);
+        }
 
         [XmlIgnore]
-        public bool EstSelectionne { get; set; }
+        public string DestinationFolderName
+        {
+            get
+            {
+                var outFolderName = $"{this.Artist}-{this.Record}";
+                if (!string.IsNullOrEmpty(this.Volume))
+                {
+                    outFolderName += $"-{this.Volume}";
+                }
+
+                return outFolderName;
+            }
+        }
         #endregion
 
         private MusicFolder()

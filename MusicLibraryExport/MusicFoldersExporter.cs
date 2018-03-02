@@ -196,13 +196,7 @@ namespace MusicLibraryExport
                         var fi = new FileInfo(filePath);
                         if (_musicFileExtension.Contains(fi.Extension.ToLower()))
                         {
-                            var outFolderName = $"{musicFolder.Artist}-{musicFolder.Record}";
-                            if (!string.IsNullOrEmpty(musicFolder.Volume))
-                            {
-                                outFolderName += $"-{musicFolder.Volume}";
-                            }
-
-                            outFolderName = Path.Combine(this.DestinationPath, outFolderName);
+                            var outFolderName = Path.Combine(this.DestinationPath, musicFolder.DestinationFolderName);
 
                             if (Directory.Exists(outFolderName))
                             {

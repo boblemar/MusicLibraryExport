@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Xml;
 using System.Xml.Serialization;
@@ -338,6 +339,8 @@ namespace MusicLibraryExport.ViewModel
                 }
             }
 
+            this.MAJSelectionAvecDestination();
+
             RaisePropertyChanged(nameof(MusicFolders));
 
             this.IsListBuildingInProgress = false;
@@ -418,11 +421,26 @@ namespace MusicLibraryExport.ViewModel
                                                                                                                                                .ThenBy(f => f.Record));
                     }
                 }
+
+                this.MAJSelectionAvecDestination();
             }
             else
             {
                 this.MusicFolders = new ObservableCollection<MusicFolder>();
             }
+        }
+
+        /// <summary>
+        /// Met à jour les éléments sélectionnés à l'aide du contenu de la destination.
+        /// </summary>
+        private void MAJSelectionAvecDestination()
+        {
+            Parallel.ForEach(this.MusicFolders, musicFolder =>
+            {
+                var destinationFolderPath = Path.Combine(Properties.Settings.Default.PublicationPath, musicFolder.DestinationFolderName);
+
+                musicFolder.EstSelectionne = Directory.Exists(destinationFolderPath);
+            });
         }
     }
 }
