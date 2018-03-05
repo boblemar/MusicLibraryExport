@@ -24,6 +24,8 @@ namespace MusicLibraryExport
             ConvertBegin,
             ConvertEnd,
             End,
+            DeleteBegin,
+            DeleteEnd,
             Error
         }
         #endregion
@@ -189,8 +191,39 @@ namespace MusicLibraryExport
 
                 this.Reset();
 
+                // On commence par supprimer de la sortie des dossiers ne correspondant pas à la sélection.
+                var diDestination = new DirectoryInfo(this.DestinationPath);
+                var dossiersAExporter = musicFolders.Select(mf => mf.DestinationFolderName);
+
+                foreach (var folder in diDestination.GetDirectories())
+                {
+                    if (!dossiersAExporter.Contains(folder.Name))
+                    {
+                        try
+                        {
+                            string message = $"Suppression de {folder.Name}";
+                            this.RaiseExportProgress(ExportProgressType.DeleteBegin, message);
+
+                            folder.Delete(true);
+
+                            message = $"Fin de suppression de {folder.Name}";
+                            this.RaiseExportProgress(ExportProgressType.DeleteEnd, message);
+                        }
+                        catch (IOException ioe)
+                        {
+                            _logger.Error(ioe);
+                        }
+                    }
+                }
+
                 foreach (var musicFolder in musicFolders)
                 {
+                    // Si le dossier existe déjà, on saute le traitement
+                    if (diDestination.GetDirectories(musicFolder.DestinationFolderName, SearchOption.TopDirectoryOnly).Any())
+                    {
+                        continue;
+                    }
+
                     foreach (var filePath in Directory.GetFiles(musicFolder.Path))
                     {
                         var fi = new FileInfo(filePath);
