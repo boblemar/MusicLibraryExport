@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -55,6 +56,7 @@ namespace MusicLibraryExport.ViewModel
         private volatile int _copyTasksTotalCount;
         private volatile int _copyTasksDoneCount;
 
+        private string _filter;
         #endregion
 
         #region Commandes
@@ -71,10 +73,37 @@ namespace MusicLibraryExport.ViewModel
                                             this._exporter.Export(this.MusicFolders.Where(mf => mf.EstSelectionne));
                                           });
         }
+
+        public RelayCommand CommandClearFilter
+        {
+            get => new RelayCommand(() => this.Filter = string.Empty);
+        }
         #endregion
 
         #region Propriétés
         public ObservableCollection<MusicFolder> MusicFolders { get; set; }
+
+        public CollectionViewSource ViewSource { get; set; }
+
+        public string Filter
+        {
+            get => this._filter;
+
+            set
+            {
+                this._filter = value;
+                RaisePropertyChanged(nameof(this.Filter));
+
+                this.ViewSource.Filter += (sender, e) =>
+                                            {
+                                                var musicFolder = e.Item as MusicFolder;
+
+                                                e.Accepted = ((musicFolder.Artist?.IndexOf(this._filter, StringComparison.InvariantCultureIgnoreCase) ?? -1) >= 0) ||
+                                                             ((musicFolder.Record?.IndexOf(this._filter, StringComparison.InvariantCultureIgnoreCase) ?? -1) >= 0) ||
+                                                             ((musicFolder.Volume?.IndexOf(this._filter, StringComparison.InvariantCultureIgnoreCase) ?? -1) >= 0);
+                                            };
+            }
+        }
 
         public int CopyTasksTotalCount
         {
@@ -304,6 +333,8 @@ namespace MusicLibraryExport.ViewModel
                                                             break;
                                                     }
                                                 };
+
+            this.ViewSource = new CollectionViewSource() { Source = this.MusicFolders };
         }
 
         public void UpdateList()
@@ -312,7 +343,7 @@ namespace MusicLibraryExport.ViewModel
             
             if (!Directory.Exists(Properties.Settings.Default.MusicLibraryPath))
             {
-                MessageBox.Show(string.Format(Properties.Resources.ERROR_INCORRECT_FOLDER, Properties.Settings.Default.MusicLibraryPath));
+                MessageBox.Show(string.Format(Properties.Resources.ERREUR_CHEMIN_INEXISTANT, Properties.Settings.Default.MusicLibraryPath));
             }
             else
             {
@@ -347,6 +378,9 @@ namespace MusicLibraryExport.ViewModel
             RaisePropertyChanged(nameof(ExportButtonVisibility));
 
             this.SaveFolderList();
+
+            RaisePropertyChanged(nameof(this.ViewSource));
+
         }
 
         private IEnumerable<MusicFolder> ContruireListe(string pathRoot, string path)

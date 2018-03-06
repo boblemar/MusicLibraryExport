@@ -117,6 +117,22 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="croix" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        xAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIJSURBVEhLvZZP
+        i4FRFMZfSjZ2Nha+BAn5AkoJZUlNo2ZmQ7Y2ViIbC7FibTEzOzaSBWbKRsqGj6CUP1NTJM7cc+bO6+Jt
+        5s6Ymad+xTnPuc/ivd17FS4d45bxzHhlwAXg/BPjjoHrkvDHI0Nr4FIeGBQU44W/4pqhdD8KbrcbGo0G
+        tFqtH4PzLpdLDOkwlJePQrfbhd9Qp9MRQ3B99Q8Mh0NuAxgMBhCNRiEUCkGtVuPVg1arFSQSCbDZbBAO
+        h2EymfAO0DriuozzEAwwGAyiCeLxOOz3e+rP53Ow2+1HfbPZDNPplPpSIZFIRDSoJJNJWCwW4HA4NPvF
+        YpHmpUJ8Pp9oOMJisWjWkXw+T/NSIeVyWTRIYTQaYTwe07xUyG63g0AgIJo+RafTQaVSoVmUVAhqs9mA
+        3+8XjZpgQKlU4lPvkg5BLZdL2jWi5xSv18vdB0mHrNfrTzeASC6X41Pvkg4JBoOi6Uuq1SqflAxpNpui
+        QQqTyUSnAEoqpFAoiIYjrFarZh3p9/s0LxXSbrdFg0oqlaLN4HQ6z3p4DM1mM5qXCkHFYjG1rtfrIZ1O
+        8w7Q0eLxeNQ+buNsNsu73whB9Xo9+qCj0YhXDtput3Q6ZzIZ8onSCvmX+0S9GfFGu/RmrNfrp9+Mbsa/
+        vuOvGPSawFeFluFS7hlHzyJ8d+F76bfeXTcMtq6ivAEE7YbV+T3I7QAAAABJRU5ErkJggg==
+</value>
+  </data>
   <data name="ERREUR_CHEMIN_INEXISTANT" xml:space="preserve">
     <value>Le chemin "{0}" n'existe pas.</value>
   </data>

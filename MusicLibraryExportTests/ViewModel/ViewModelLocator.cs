@@ -1,7 +1,7 @@
 /*
   In App.xaml:
   <Application.Resources>
-      <vm:ViewModelLocator xmlns:vm="clr-namespace:MusicLibraryExport"
+      <vm:ViewModelLocator xmlns:vm="clr-namespace:MusicLibraryExportTests"
                            x:Key="Locator" />
   </Application.Resources>
   
@@ -16,7 +16,7 @@ using CommonServiceLocator;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
 
-namespace MusicLibraryExport.ViewModel
+namespace MusicLibraryExportTests.ViewModel
 {
     /// <summary>
     /// This class contains static references to all the view models in the

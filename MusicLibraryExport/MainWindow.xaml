@@ -4,14 +4,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MusicLibraryExport"
+        xmlns:properties="clr-namespace:MusicLibraryExport.Properties"
         mc:Ignorable="d"
         DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
         Title="Export de musique" Height="600" Width="1000" Margin="5">
     <Window.Resources>
         <SolidColorBrush x:Key="_progressBackground" Color="#FFFDF9AA"/>
+        <Image x:Key="ImgCroix" Source="Resources/croix.png" />
     </Window.Resources>
     <Grid>
-        <DataGrid ItemsSource="{Binding MusicFolders, Mode=TwoWay}" Margin="0,0,0,48" AutoGenerateColumns="False" Visibility="{Binding MusicFolderVisibility}">
+        <DataGrid ItemsSource="{Binding ViewSource.View, Mode=OneWay}" Margin="0,0,0,48" AutoGenerateColumns="False" Visibility="{Binding MusicFolderVisibility}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Artiste" Width="*" Binding="{Binding Path=Artist}" IsReadOnly="True" />
                 <DataGridTextColumn Header="Album" Width="2*" Binding="{Binding Path=Record}" IsReadOnly="True" />
@@ -28,17 +30,28 @@
         </DataGrid>
 
 
-        <StackPanel x:Name="_stackPanelBoutons" Margin="5" VerticalAlignment="Bottom" Orientation="Horizontal" FlowDirection="RightToLeft">
-            <Button x:Name="_buttonConstruireListe" Content="Construire la liste" Visibility="{Binding ListUpdateButtonVisibility}" Margin="0,0,5,0" Command="{Binding CommandListUpdate}"/>
-            <Button x:Name="_buttonExporter" Content="Exporter" Margin="0,0,5,0" Visibility="{Binding ExportButtonVisibility}" Command="{Binding CommandExport}"/>
-        </StackPanel>
+        <Grid VerticalAlignment="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <Label>N'afficher que les lignes contenant :</Label>
+                <TextBox Text="{Binding Path=Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="200" Height="20" />
+                <Button Content="{StaticResource ResourceKey=ImgCroix}" Width="25" Margin="1" Command="{Binding CommandClearFilter}" Background="{x:Null}" BorderBrush="{x:Null}" />
+            </StackPanel>
+            <StackPanel x:Name="_stackPanelBoutons" Margin="5" Orientation="Horizontal" FlowDirection="RightToLeft" Grid.Column="1">
+                <Button x:Name="_buttonConstruireListe" Content="Construire la liste" Visibility="{Binding ListUpdateButtonVisibility}" Margin="0,0,5,0" Command="{Binding CommandListUpdate}"/>
+                <Button x:Name="_buttonExporter" Content="Exporter" Margin="0,0,5,0" Visibility="{Binding ExportButtonVisibility}" Command="{Binding CommandExport}"/>
+            </StackPanel>
+        </Grid>
         <WrapPanel HorizontalAlignment="Left" Height="100" Margin="1222,144,-330,0" VerticalAlignment="Top" Width="100"/>
         <!--Visibility="{Binding ProgressPanelVisibility}"-->
         <DockPanel Visibility="{Binding ProgressPanelVisibility}" Margin="50,50,50,50" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
             <Border Width="5"
                     CornerRadius="5"
                     Padding="10" />
-            
+
             <StackPanel DockPanel.Dock="Bottom" Height="150">
                 <Grid Height="70">
                     <ProgressBar Minimum="0" Maximum="{Binding ConversionTasksTotalCount}" Value="{Binding ConversionTasksDoneCount}" Background="{DynamicResource _progressBackground}" />
